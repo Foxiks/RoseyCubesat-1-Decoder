@@ -50,13 +50,13 @@ def main(s, frames_dict):
             try:
                 frame = s.recv(2048).hex()
                 frame = frame[104:]
-                sync=frame[:12]
-                if(sync=='f05701a40c00'):
-                    frame_number=bitstring.BitStream(hex=str(str(frame[12:20]))).read('uint')
-                    if(int(frame_number)<2160):
+                sync=frame[6:10]
+                if(sync=='a40c'):
+                    frame_number=bitstring.BitStream(hex=str(str(frame[16:20]))).read('uint')
+                    if(str(frame[14:16])=="00"):
                         print('Normal image data! Frame number: '+str(frame_number)+' of 2159.'+str(' '*20), end='\r')
                         frames_dict.update({int(frame_number):str(frame[20:])})
-                    if(int(frame_number)>2160):
+                    else:
                         print('Image preview data! Frame number: '+str(frame_number)+str(' '*20), end='\r')
             except socket.timeout:
                 None
@@ -66,7 +66,7 @@ def main(s, frames_dict):
             while(key!=2160):
                 bitstring.BitArray(hex=str(frames_dict[key])).tofile(out)
                 key+=1
-            out.close()
+            out.close()        
             with open('out_data.bin', 'rb') as file:
                 f=file.read()
                 bbyteArray = bytearray(f)
